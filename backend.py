@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import csv
 import os
@@ -157,6 +157,10 @@ def recalculate_scores():
     write_csv(PARTICIPANTS_CSV, participants, fieldnames)
 
     return jsonify({'message': 'Scores recalculated successfully'}), 200
+
+@app.route('/')
+def swiss_tourney_home():
+    return render_template('swiss.html', title='Swiss Tourney')
 
 if __name__ == '__main__':
     app.run(debug=True)
