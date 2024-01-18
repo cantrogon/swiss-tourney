@@ -53,6 +53,10 @@ def calculate_scores(data, num_players, offset=0.01):
     matrix = transform_win_loss_ratio(matrix)
     # print(matrix)
 
+    # Normalise columns
+    norms = np.linalg.norm(matrix, axis=0)
+    matrix = matrix / norms
+
     matrix += offset
     rankings = power_iteration(matrix)
     # print("Rankings:", rankings)
