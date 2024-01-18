@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Swiss Tournament</title>
+    <link rel="stylesheet" href="../static/swiss.css"></link>
+</head>
+<body>
+    <div id="tabs">
+        <button onclick="showTab('participants')">Participants</button>
+        <button onclick="showTab('matches')">Matches</button>
+    </div>
+
+    <div id="participants" class="tab-content">
+	    <h2>Participants</h2>
+	    <form id="addParticipantForm">
+	        <input type="text" id="participantName" placeholder="Participant Name" required>
+	        <button type="submit">Add Participant</button>
+	    </form>
+	    <button id="recalculateScoresButton">Recalculate Scores</button><br/><br/>
+	    <table id="participantsTable">
+	        <thead>
+	            <tr>
+	                <th>ID</th>
+	                <th>Name</th>
+	                <th>Score</th>
+	            </tr>
+	        </thead>
+	        <tbody>
+	            <!-- Participant rows will be added here dynamically -->
+	        </tbody>
+	    </table>
+	</div>
+
+	<div id="matches" class="tab-content">
+	    <h2>Matches</h2>
+	    <form id="addMatchForm">
+	        <select id="participant1Dropdown"></select>
+	        <input type="number" id="participant1Wins" placeholder="Participant 1 Wins" required>
+	        <select id="participant2Dropdown"></select>
+	        <input type="number" id="participant2Wins" placeholder="Participant 2 Wins" required>
+	        <button type="submit">Add Match</button>
+	    </form>
+	    <table id="matchesTable">
+	        <thead>
+	            <tr>
+	                <th>Participant 1</th>
+	                <th>Participant 2</th>
+	                <th>Participant 1 Wins</th>
+	                <th>Participant 2 Wins</th>
+	            </tr>
+	        </thead>
+	        <tbody>
+	            <!-- Match rows will be added here dynamically -->
+	        </tbody>
+	    </table>
+	</div>
+    <script src="../static/swiss.js"></script>
+</body>
+</html>
