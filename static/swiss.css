@@ -22,6 +22,16 @@ th {
     background-color: #f2f2f2;
 }
 
+/* Make every second row's background light grey */
+tbody tr:nth-child(even) {
+   background-color: #f7f7f7;
+}
+
+.thin-column {
+    width: 0; /* Force column width to be sized to the content */
+    padding-right: 1em;
+}
+
 form {
     margin-bottom: 20px;
 }

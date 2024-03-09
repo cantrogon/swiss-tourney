@@ -17,13 +17,14 @@
 	        <button type="submit">Add Participant</button>
 	    </form>
 	    <button id="recalculateScoresButton">Recalculate Scores</button><br/><br/>
-	    <table id="participantsTable">
+	    <table id="participantsTable" style="width: calc(min(max(0.7vw, 1000px), 100%))">
 	        <thead>
 	            <tr>
-	                <th>ID</th>
-	                <th>Name</th>
-	                <th>Score</th>
-	            </tr>
+	                <th class="thin-column">Rank</th>
+                    <th class="thin-column">Score</th>
+                    <th>Name</th>
+                    <th class="thin-column">ID</th>
+                </tr>
 	        </thead>
 	        <tbody>
 	            <!-- Participant rows will be added here dynamically -->
