@@ -38,14 +38,36 @@ function fetchParticipants() {
         .then(participants => {
         	var table = document.getElementById("participantsTable").getElementsByTagName('tbody')[0];
             table.innerHTML = ""; // Clear existing rows
-            participants.forEach(participant => {
+
+            const processedScores = participants.map(participant => parseFloat(participant.score).toFixed(3));
+
+            let currentlyTying = false;
+            let currentTieRank = 0;
+
+            for (let i = 0; i < participants.length; i++){
+                const participant = participants[i];
                 participantsById[participant.id] = participant.name; // for matches table
 
+                const score = processedScores[i];
+
+                let rank;
+                if (i !== participants.length - 1 && processedScores[i + 1] === score) { // If the tie chain will continue
+                    if (currentlyTying === false) { // If this is the start of a new tie chain, update the starting rank
+                        currentTieRank = i + 1;
+                    }
+                    currentlyTying = true;
+                    rank = "=" + currentTieRank; // Whether the chain is old or new, the rank has a = in it
+                } else {
+                    rank = currentlyTying ? "=" + currentTieRank : (i + 1).toString();
+                    currentlyTying = false;
+                }
+
                 var row = table.insertRow();
-                row.insertCell(0).innerHTML = participant.id;
-                row.insertCell(1).innerHTML = participant.name;
-                row.insertCell(2).innerHTML = parseFloat(participant.score).toFixed(3);
-            });
+                row.insertCell(0).innerHTML = rank;
+                row.insertCell(1).innerHTML = score;
+                row.insertCell(2).innerHTML = participant.name;
+                row.insertCell(3).innerHTML = participant.id;
+            }
         });
 
     fetch('http://localhost:5000/get-participants-sort-name')
