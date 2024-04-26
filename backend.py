@@ -3,6 +3,7 @@ from flask_cors import CORS
 import csv
 import os
 from score_calculation import calculate_scores
+from pairings import get_pairings, get_pairings_random
 
 app = Flask(__name__)
 CORS(app)
@@ -178,11 +179,10 @@ def recalculate_scores():
     return jsonify({'message': 'Scores recalculated successfully'}), 200
 
 
-# from pairings import get_pairings
 @app.route('/get-pairings', methods=['GET'])
 def get_pairings_this():
-    pairings = [[1,2],[2,1]]
-    return pairings
+    participants = read_csv(PARTICIPANTS_CSV)
+    return get_pairings_random(len(participants))
     # participants = read_csv(PARTICIPANTS_CSV)
     # matches = read_csv(MATCHES_CSV)
     # match_data = [(
