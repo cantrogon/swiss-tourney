@@ -8,4 +8,4 @@ Reqirements:
 pip install numpy flask flask_cors
 ```
 
-To run, run `backend.py` then `swiss.html`.
+To run, run `backend.py`.

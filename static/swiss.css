@@ -2,20 +2,14 @@ body {
     font-family: Arial, sans-serif;
 }
 
+#main {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
 .tab-content {
     display: none;
     padding: 20px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-table, th, td {
-    border: 1px solid #ddd;
-    text-align: left;
-    padding: 8px;
 }
 
 th {
@@ -23,8 +17,8 @@ th {
 }
 
 /* Make every second row's background light grey */
-tbody tr:nth-child(even) {
-   background-color: #f7f7f7;
+tbody tr:nth-child(even) td {
+   background-color: #fcfcfc;
 }
 
 .thin-column {
@@ -38,4 +32,8 @@ form {
 
 button {
     cursor: pointer;
+}
+
+.table input[type=number] {
+    width: 4em;
 }

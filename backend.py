@@ -43,6 +43,19 @@ def write_csv(file_path, data, fieldnames):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+
+def add_csv(file_path, data, fieldnames):
+    try:
+        with open(file_path, mode='a', newline='', encoding='utf-8') as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            for row in data:
+                writer.writerow(row)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+
+
 @app.route('/get-participants', methods=['GET'])
 def get_participants():
     participants = read_csv(PARTICIPANTS_CSV)
@@ -74,9 +87,8 @@ def add_participant():
 
     new_participant['id'] = new_id
 
-    participants.append(new_participant)
     fieldnames = ['id', 'name', 'score']
-    write_csv(PARTICIPANTS_CSV, participants, fieldnames)
+    add_csv(PARTICIPANTS_CSV, [new_participant], fieldnames)
     return jsonify({'message': 'Participant added successfully', 'id': new_id}), 200
 
 @app.route('/remove-participant', methods=['POST'])
@@ -109,18 +121,23 @@ def get_matches():
 @app.route('/add-match', methods=['POST'])
 def add_match():
     new_match = request.json
-    matches = read_csv(MATCHES_CSV)
-    matches.append(new_match)
-    fieldnames = ['participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
-    write_csv(MATCHES_CSV, matches, fieldnames)
+    fieldnames = ['match_id', 'round_id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
+    add_csv(MATCHES_CSV, [new_match], fieldnames)
+    return jsonify({'message': 'Match added successfully'}), 200
+
+@app.route('/add-matches', methods=['POST'])
+def add_matches():
+    new_matches = request.json
+    fieldnames = ['match_id', 'round_id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
+    add_csv(MATCHES_CSV, new_matches, fieldnames)
     return jsonify({'message': 'Match added successfully'}), 200
 
 @app.route('/remove-match', methods=['POST'])
 def remove_match():
-    match_id = request.json['id']
+    match_id = request.json['match_id']
     matches = read_csv(MATCHES_CSV)
-    matches = [m for m in matches if m['id'] != match_id]
-    fieldnames = ['id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
+    matches = [m for m in matches if m['match_id'] != match_id]
+    fieldnames = ['match_id', 'round_id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
     write_csv(MATCHES_CSV, matches, fieldnames)
     return jsonify({'message': 'Match removed successfully'}), 200
 
@@ -129,10 +146,13 @@ def edit_match():
     updated_match = request.json
     matches = read_csv(MATCHES_CSV)
     for m in matches:
-        if m['id'] == updated_match['id']:
-            # Update match details
+        if m['match_id'] == updated_match['match_id']:
+            m.update(updated_match)
+            match_found = True
             break
-    fieldnames = ['id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
+    if not match_found:
+        return jsonify({'message': 'Match not found'}), 404
+    fieldnames = ['match_id', 'round_id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
     write_csv(MATCHES_CSV, matches, fieldnames)
     return jsonify({'message': 'Match updated successfully'}), 200
 
@@ -140,12 +160,11 @@ def edit_match():
 def recalculate_scores():
     participants = read_csv(PARTICIPANTS_CSV)
     matches = read_csv(MATCHES_CSV)
-
     match_data = [(
-            int(m['participant1_id']) - 1, 
-            int(m['participant2_id']) - 1, 
-            float(m['participant1_wins']), 
-            float(m['participant2_wins'])
+        int(m['participant1_id']) - 1, 
+        int(m['participant2_id']) - 1, 
+        float(m['participant1_wins']), 
+        float(m['participant2_wins'])
     ) for m in matches]
 
     scores = calculate_scores(match_data, len(participants))
@@ -157,6 +176,27 @@ def recalculate_scores():
     write_csv(PARTICIPANTS_CSV, participants, fieldnames)
 
     return jsonify({'message': 'Scores recalculated successfully'}), 200
+
+
+# from pairings import get_pairings
+@app.route('/get-pairings', methods=['GET'])
+def get_pairings_this():
+    pairings = [[1,2],[2,1]]
+    return pairings
+    # participants = read_csv(PARTICIPANTS_CSV)
+    # matches = read_csv(MATCHES_CSV)
+    # match_data = [(
+    #     int(m['participant1_id']) - 1, 
+    #     int(m['participant2_id']) - 1, 
+    #     float(m['participant1_wins']), 
+    #     float(m['participant2_wins'])
+    # ) for m in matches]
+
+    # matrix = get_matrix(match_data, len(participants))
+    # scores = calculate_scores(match_data, len(participants))
+    # pairings = get_pairings(scores, matrix)
+    # return jsonify(pairings)
+
 
 @app.route('/')
 def swiss_tourney_home():
