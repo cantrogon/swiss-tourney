@@ -5,7 +5,7 @@ A repository for an implementation of a Swiss-style tournament. Frontend include
 Reqirements:
 
 ```
-pip install numpy flask flask_cors
+pip install numpy flask flask_cors scipy
 ```
 
 To run, run `backend.py`.

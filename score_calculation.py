@@ -20,7 +20,7 @@ def normalize_vector(v):
     return v / norm
 
 
-def power_iteration(matrix, iterations=100, damping_factor=0.85):
+def power_iteration(matrix, iterations=1000, damping_factor=1-(1/12)**2):
     """Compute the dominant eigenvector using the power iteration method."""
     n = matrix.shape[0]
     b_k = np.random.rand(n)
@@ -31,7 +31,6 @@ def power_iteration(matrix, iterations=100, damping_factor=0.85):
         # Apply the damping factor
         b_k1 = (damping_factor * np.dot(matrix, b_k)) + ((1 - damping_factor) / n)
         b_k1 = normalize_vector(b_k1)
-
         # Check convergence (optional)
         if np.allclose(b_k, b_k1):
             return b_k1
@@ -45,8 +44,11 @@ def transform_win_loss_ratio(A):
     """Turns number of wins and losses into percentage."""
     A = np.array(A)
     A_transpose = A.T
-    transformed_A = np.divide(A, A + A_transpose, out=np.zeros_like(A), where=(A + A_transpose) != 0)
-    np.fill_diagonal(transformed_A, np.diag(A))
+    A_plus_AT = A + A_transpose
+    # transformed_A = np.divide(A, A_plus_AT, out=np.zeros(A.shape), where=(A_plus_AT != 0))
+    # transformed_A = np.divide(A, A + A_transpose, where=(A + A_transpose != 0))
+    transformed_A = np.divide(A, A + A_transpose, out=np.full_like(A, 0.5), where=(A + A_transpose) != 0)
+    # np.fill_diagonal(transformed_A, np.diag(A))
     return transformed_A
 
 
@@ -56,17 +58,24 @@ def calculate_scores(data, num_players, offset=0.01):
     for d in data:
         update_matrix(matrix, *d)
 
+    return calculate_scores_from_matrix(matrix, offset)
+
+
+def calculate_scores_from_matrix(matrix, offset=0.01, damping_factor=0.85):
     matrix = transform_win_loss_ratio(matrix)
-    # print(matrix)
 
     # Normalise columns
     norms = np.linalg.norm(matrix, axis=0)
-    np.divide(
-        matrix, norms, out=matrix, where=(norms != 0)
-    )
+
+    np.divide(matrix, norms, out=matrix, where=(norms != 0))
+    if np.isnan(matrix).any():
+        breakpoint()
+    # Normalise rows
+    # norms = np.linalg.norm(matrix, axis=1)
+    # np.divide(matrix, norms, out=matrix, where=(norms != 0))
 
     matrix += offset
-    rankings = power_iteration(matrix)
+    rankings = power_iteration(matrix, damping_factor=1-(1/12)**2)
     # print("Rankings:", rankings)
 
     return rankings
