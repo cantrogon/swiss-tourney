@@ -1,0 +1,12 @@
+[global]
+loaded_comp = "default"
+dampening_factor = 0.85
+
+[default]
+match_length = "Bo3"
+format = "Draft"
+
+[discord]
+use_discord = false
+discord_bot_id = 0
+

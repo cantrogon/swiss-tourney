@@ -23,8 +23,8 @@ def normalize_vector(v):
 def power_iteration(matrix, iterations=100, damping_factor=0.85):
     """Compute the dominant eigenvector using the power iteration method."""
     n = matrix.shape[0]
-    # b_k = np.random.rand(n)
-    b_k = np.ones(n)
+    b_k = np.random.rand(n)
+    # b_k = np.ones(n)
     b_k = normalize_vector(b_k)
 
     for i in range(iterations):

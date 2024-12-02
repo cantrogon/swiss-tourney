@@ -4,13 +4,21 @@ import csv
 import os
 from score_calculation import calculate_scores, get_matrix_from_matches
 from pairings import get_pairings_random, get_pairings_lp
+import tomllib
 
 app = Flask(__name__)
 CORS(app)
 
+with open("global_config.toml", "rb") as f:
+    g_cfg = tomllib.load(f)
+
 # Path to the CSV files
-PARTICIPANTS_CSV = 'participants.csv'
-MATCHES_CSV = 'matches.csv'
+PARTICIPANTS_CSV = g_cfg['global']['loaded_comp'] + '/participants.csv'
+MATCHES_CSV = g_cfg['global']['loaded_comp'] + '/matches.csv'
+
+# CSV file headers
+participants_csv_header = ["id","name","score","stillPlaying","discordUserSnowflake"]
+matches_csv_header = ["match_id","round_id","participant1_id","participant2_id","participant1_wins","participant2_wins"]
 
 def create_csv_if_not_exists(file_path, fieldnames=[]):
     if not os.path.exists(file_path):
@@ -21,8 +29,8 @@ def create_csv_if_not_exists(file_path, fieldnames=[]):
             writer = csv.writer(file)
             writer.writerow(fieldnames)
 
-create_csv_if_not_exists(PARTICIPANTS_CSV, ["id","name","score"])
-create_csv_if_not_exists(MATCHES_CSV, ["match_id","round_id","participant1_id","participant2_id","participant1_wins","participant2_wins"])
+create_csv_if_not_exists(PARTICIPANTS_CSV, participants_csv_header)
+create_csv_if_not_exists(MATCHES_CSV, matches_csv_header)
 
 def read_csv(file_path):
     data = []
@@ -90,8 +98,10 @@ def add_participant():
         new_id = 1  # Start from 1 if no participants are present
 
     new_participant['id'] = new_id
+    new_participant['stillPlaying'] = 1
+    new_participant['discordUserSnowflake'] = 0
 
-    fieldnames = ['id', 'name', 'score']
+    fieldnames = participants_csv_header
     add_csv(PARTICIPANTS_CSV, [new_participant], fieldnames)
     return jsonify({'message': 'Participant added successfully', 'id': new_id}), 200
 
@@ -100,7 +110,7 @@ def remove_participant():
     participant_id = request.json['id']
     participants = read_csv(PARTICIPANTS_CSV)
     participants = [p for p in participants if p['id'] != participant_id]
-    fieldnames = ['id', 'name', 'score']
+    fieldnames = participants_csv_header
     write_csv(PARTICIPANTS_CSV, participants, fieldnames)
     return jsonify({'message': 'Participant removed successfully'}), 200
 
@@ -112,8 +122,9 @@ def edit_participant():
         if p['id'] == updated_participant['id']:
             p['name'] = updated_participant['name']
             p['score'] = updated_participant['score']
+            p['stillPlaying'] = updated_participant['stillPlaying']
             break
-    fieldnames = ['id', 'name', 'score']
+    fieldnames = participants_csv_header
     write_csv(PARTICIPANTS_CSV, participants, fieldnames)
     return jsonify({'message': 'Participant updated successfully'}), 200
 
@@ -125,14 +136,14 @@ def get_matches():
 @app.route('/add-match', methods=['POST'])
 def add_match():
     new_match = request.json
-    fieldnames = ['match_id', 'round_id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
+    fieldnames = matches_csv_header
     add_csv(MATCHES_CSV, [new_match], fieldnames)
     return jsonify({'message': 'Match added successfully'}), 200
 
 @app.route('/add-matches', methods=['POST'])
 def add_matches():
     new_matches = request.json
-    fieldnames = ['match_id', 'round_id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
+    fieldnames = matches_csv_header
     add_csv(MATCHES_CSV, new_matches, fieldnames)
     return jsonify({'message': 'Match added successfully'}), 200
 
@@ -141,7 +152,7 @@ def remove_match():
     match_id = request.json['match_id']
     matches = read_csv(MATCHES_CSV)
     matches = [m for m in matches if m['match_id'] != match_id]
-    fieldnames = ['match_id', 'round_id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
+    fieldnames = matches_csv_header
     write_csv(MATCHES_CSV, matches, fieldnames)
     return jsonify({'message': 'Match removed successfully'}), 200
 
@@ -156,7 +167,7 @@ def edit_match():
             break
     if not match_found:
         return jsonify({'message': 'Match not found'}), 404
-    fieldnames = ['match_id', 'round_id', 'participant1_id', 'participant2_id', 'participant1_wins', 'participant2_wins']
+    fieldnames = matches_csv_header
     write_csv(MATCHES_CSV, matches, fieldnames)
     return jsonify({'message': 'Match updated successfully'}), 200
 
@@ -176,7 +187,7 @@ def recalculate_scores():
         p['score'] = s
 
     # Write updated scores back to CSV
-    fieldnames = ['id', 'name', 'score']
+    fieldnames = participants_csv_header
     write_csv(PARTICIPANTS_CSV, participants, fieldnames)
 
     return jsonify({'message': 'Scores recalculated successfully'}), 200
@@ -202,6 +213,9 @@ def get_pairings_lp_this():
     scores = calculate_scores(match_data, len(participants))
     print(matrix)
     print(scores)
+    # Used to force a bye
+    #scores[11] = -1.0
+    #scores[12] = -1.0
     pairings = get_pairings_lp(scores, matrix)
     if pairings is not None:
         pairings = [(p[0]+1,p[1]+1) for p in pairings] # player ids at 1
